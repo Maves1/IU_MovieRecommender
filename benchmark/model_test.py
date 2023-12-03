@@ -12,8 +12,32 @@ from models.model import MatrixFactorization, Loader, get_recommended_movies
 
 
 # Let's calculate some metrics
-def calculate_rmse(model, loader):
-    pass
+import torch
+from torch.utils.data import DataLoader
+import numpy as np
+
+# Benchmark function to calculate RMSE
+def calculate_rmse(model, data_loader):
+    criterion = torch.nn.MSELoss()  # Mean Squared Error loss
+    model.eval()  # Set the model to evaluation mode
+    predictions = []
+    true_ratings = []
+    
+    with torch.no_grad():
+        for inputs, targets in data_loader:
+            # Predict ratings
+            outputs = model(inputs)
+            
+            # Collect predictions and true ratings
+            predictions.extend(outputs.numpy())
+            true_ratings.extend(targets.numpy())
+    
+    # Calculate RMSE
+    predictions = np.array(predictions)
+    true_ratings = np.array(true_ratings)
+    rmse = np.sqrt(np.mean((true_ratings - predictions) ** 2))
+    return rmse
+
 
 test_model = torch.load("./models/supermodel.pth")
 
@@ -49,3 +73,18 @@ for _, movie_id in enumerate(user_ratings[:rated_count_show]):
 print("\nMovies recommended to the user:")
 for _, movie_title in enumerate(recommended_movie_titles):
     print(movie_title)
+
+
+# Now let's also calculate RMSE
+print("\nCalculating RMSE for the whole dataset!")
+
+# Define batch size for DataLoader
+batch_size = 64
+
+# Create DataLoader for the dataset
+data_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+
+# Calculate RMSE using the model and DataLoader
+rmse = calculate_rmse(test_model, data_loader)
+
+print("RMSE (not related to the previous recommended movies):", rmse)
