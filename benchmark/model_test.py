@@ -42,7 +42,7 @@ def calculate_rmse(model, data_loader):
 test_model = torch.load("./models/supermodel.pth")
 
 # Dataset root folder
-dataset_root_path = "./data/interim/ml-100k"
+dataset_root_path = "./benchmark/data/"
 
 u_data_df = pd.read_csv(f"{dataset_root_path}/u.data", delimiter="\t", names=["user_id", "movie_id", "rating", "timestamp"], header=None)
 
